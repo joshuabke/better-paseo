@@ -1244,6 +1244,21 @@ export function BetterPaseoSettingsPage({ theme, layout, host }: PluginSurfacePr
           stacked
           disabled={!preferences.assistantMarkdown}
         />
+        <SettingRow
+          title={t.replyFooterTitle}
+          description={t.replyFooterDescription}
+          control={
+            <Toggle
+              value={preferences.showReplyFooter}
+              onChange={(showReplyFooter) => updateEnhancerPreferences({ showReplyFooter })}
+              label={t.replyFooterTitle}
+              look={look}
+              disabled={!preferences.assistantMarkdown}
+            />
+          }
+          look={look}
+          disabled={!preferences.assistantMarkdown}
+        />
         {native ? null : (
           <SettingRow
             title={t.selectionTitle}
