@@ -48,6 +48,8 @@ import { DisclosureHeader } from "../../client/ui/disclosure-header";
 import { resetTimelineTailsForTests } from "../../client/timeline-tail";
 import { getBlock } from "../../client/details/block-registry";
 import { detailsApi, readDetails } from "../../client/details/details-store";
+import { resetEnhancerPreferences, updateEnhancerPreferences } from "../../client/preferences";
+import { StyleSheet } from "./helpers/rn-mock";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const theme = { colors: { surface0: "#fff", surface1: "#eee", surface2: "#ddd", border: "#ccc",
@@ -298,5 +300,25 @@ describe("standard level running card under the newest row", () => {
       // The same card, not a remount.
       expect(settled).toBe(pending);
     } finally { await act(async () => renderer.unmount()); }
+  });
+});
+
+describe("work card spacing above the footer", () => {
+  it("keeps room for the plugin's footer only while that footer is drawn", async () => {
+    const turn = [prompt(1, "t"), call(edit("e1", "a.ts"), 2, "t"), reply(3, "Fixed it.", "t")];
+    const harness = setup(turn);
+    setStatus("idle");
+    let renderer!: TestRenderer.ReactTestRenderer;
+    await act(async () => { renderer = TestRenderer.create(replyRow(harness.agentId, 3, "Fixed it.", "complete")); });
+    await act(flush);
+    const gapBelow = () => StyleSheet.flatten(cards(renderer)[0]!.findAllByType("View" as never)[0]!.props.style).marginBottom ?? 0;
+    try {
+      expect(layoutOf(renderer)).toEqual([["text", "card", "footer"]]);
+      expect(gapBelow()).toBe(14);
+      // Without it Paseo draws its own footer under the row with its own gap, as under a reply's text.
+      await act(async () => updateEnhancerPreferences({ showReplyFooter: false }));
+      expect(layoutOf(renderer)).toEqual([["text", "card"]]);
+      expect(gapBelow()).toBe(0);
+    } finally { await act(async () => renderer.unmount()); resetEnhancerPreferences(); }
   });
 });

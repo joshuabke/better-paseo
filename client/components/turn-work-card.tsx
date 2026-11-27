@@ -181,7 +181,7 @@ interface CardProps {
 }
 
 export const TurnWorkCard = memo(function TurnWorkCard({ agentId, at, work, store, tokens, compact }: CardProps) {
-  const { language } = useEnhancerPreferences();
+  const { language, showReplyFooter } = useEnhancerPreferences();
   const text = STRINGS[resolveLanguage(language)] ?? STRINGS.en;
   const registration = useRef<{ id: string; handle: BlockRegistration } | null>(null);
   // A settled turn names the card, then says how many steps folded into it and how many tools it called.
@@ -229,7 +229,7 @@ export const TurnWorkCard = memo(function TurnWorkCard({ agentId, at, work, stor
     detailsApi.open(agentId, entry.id, { independent: true, navigable: false });
   };
   return (
-    <View style={styles.card}>
+    <View style={showReplyFooter ? styles.cardAboveFooter : styles.card}>
       {work.steps.length ? (
         <BlockPlacementContext.Provider value={null}>
           <DisclosureHeader expanded={false} onToggle={toggleSteps}
@@ -771,7 +771,10 @@ function createCardStyles(tokens: ExtendedThemeTokens) {
   const listRow = { ...row, minHeight: block.rowHeight.desktop - space.xs, marginHorizontal: -space.xs,
     paddingLeft: DISCLOSURE_HEADER.textColumn + space.xs, paddingRight: space.xs, borderRadius: 6 };
   return StyleSheet.create({
-    card: { marginTop: 6, marginBottom: space.sm + 6 },
+    // Room for the plugin's reply footer. With that footer off, Paseo's own (0.17.5 and later) follows
+    // with its own gap, the one it leaves under a reply's text or a tool row; a margin here only added to it.
+    card: { marginTop: 6 },
+    cardAboveFooter: { marginTop: 6, marginBottom: space.sm + 6 },
     slot: { width: DISCLOSURE_HEADER.iconSlot, marginRight: DISCLOSURE_HEADER.slotTrim, alignItems: "center", justifyContent: "center" },
     intent: { color: tokens.foregroundMuted, fontFamily: tokens.fontUi, fontSize: block.label.size,
       lineHeight: block.label.lineHeight, paddingVertical: space.xs / 2 },
